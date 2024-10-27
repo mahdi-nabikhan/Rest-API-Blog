@@ -8,5 +8,7 @@ urlpatterns = [
     path('post-detail/<int:pk>/', PostDetail.as_view(), name='post-detail'),
 
     # Generic View
+    path('post-list-generic/', PostListGeneric.as_view(), name='post-list-generic'),
+    path('post-detail/<int:pk>/', PostDetail.as_view(), name='post-detail'),
 
 ]
