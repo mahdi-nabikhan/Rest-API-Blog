@@ -6,7 +6,7 @@ from blog.models import *
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework import generics
 from rest_framework import viewsets
-
+from .permissions import *
 
 class CategoryListCreate(APIView):
     """
@@ -56,7 +56,7 @@ class PostDetail(APIView):
     getting the single post and updated the post and delete the post
     """
     serializer_class = PostSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly,)
+    permission_classes = (IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly)
 
     def get(self, request, pk):
         post = Posts.objects.get(pk=pk)
@@ -95,7 +95,7 @@ class PostListGeneric(generics.ListCreateAPIView):
     getting list of post and creating a new post (with generic method)
     """
     serializer_class = PostSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly,)
+    permission_classes = (IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly)
     queryset = Posts.objects.all()
 
     def get(self, request, *args, **kwargs):
@@ -142,7 +142,7 @@ class PostCRUDViewSet(viewsets.ViewSet):
     """
     CRUD operation for post (using ViewSet)
     """
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
     serializer_class = PostSerializer
     queryset = Posts.objects.all()
 

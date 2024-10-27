@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from blog.models import *
+from account.models import *
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -20,6 +21,7 @@ class PostSerializer(serializers.ModelSerializer):
             'id', 'title', 'content', 'category', 'status', 'created_at', 'published_at', 'snippet', 'relative_url',
             'author'
         )
+        read_only_fields = ('author',)
 
     # def get_absolute_url(self, obj):
     #     request = self.context.get('request')
@@ -27,7 +29,7 @@ class PostSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         response = super(PostSerializer, self).to_representation(instance)
-        request=self.context.get('request')
+        request = self.context.get('request')
         print(request)
         if request.parser_context.get("kwargs").get("pk"):
             response.pop('snippet')
@@ -36,3 +38,7 @@ class PostSerializer(serializers.ModelSerializer):
 
         response['category'] = CategorySerializer(instance.category).data
         return response
+
+    def create(self, validated_data):
+        validated_data['author'] = User.objects.get(id=self.context.get('request').user.id)
+        return super().create(validated_data)
