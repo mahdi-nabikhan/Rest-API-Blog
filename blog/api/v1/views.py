@@ -5,7 +5,7 @@ from blog.api.v1.serializers import *
 from blog.models import *
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework import generics
-from rest_framework import mixins
+from rest_framework import viewsets
 
 
 class CategoryListCreate(APIView):
@@ -91,6 +91,9 @@ class PostDetail(APIView):
 
 
 class PostListGeneric(generics.ListCreateAPIView):
+    """
+    getting list of post and creating a new post (with generic method)
+    """
     serializer_class = PostSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
     queryset = Posts.objects.all()
@@ -103,6 +106,9 @@ class PostListGeneric(generics.ListCreateAPIView):
 
 
 class PostDetailGeneric(generics.RetrieveUpdateDestroyAPIView):
+    """
+    getting the single post and updating the post and delete the post (using generic method)
+    """
     serializer_class = PostSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
     queryset = Posts.objects.all()
@@ -117,3 +123,97 @@ class PostDetailGeneric(generics.RetrieveUpdateDestroyAPIView):
         return self.destroy(request, *args, **kwargs)
 
 
+class CategoryListCreateGeneric(generics.ListCreateAPIView):
+    """
+    getting list of post and creating a new category (with generic method)
+    """
+    serializer_class = CategorySerializer
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+    queryset = Category.objects.all()
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
+
+
+class PostCRUDViewSet(viewsets.ViewSet):
+    """
+    CRUD operation for post (using ViewSet)
+    """
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    serializer_class = PostSerializer
+    queryset = Posts.objects.all()
+
+    def list(self, request):
+        serializer = self.serializer_class(self.queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def retrieve(self, request, pk):
+        obj = Posts.objects.get(pk=pk)
+        serializer = self.serializer_class(obj)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def create(self, request):
+        data = request.data
+        serializer = self.serializer_class(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def update(self, request, pk):
+        obj = Posts.objects.get(pk=pk)
+        data = request.data
+        serializer = self.serializer_class(obj, data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def destroy(self, request, pk):
+        obj = Posts.objects.get(pk=pk)
+        obj.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def partial_update(self, request, pk):
+        obj = Posts.objects.get(pk=pk)
+        data = request.data
+        serializer = self.serializer_class(instance=obj, data=data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CategoryCRViewSet(viewsets.ViewSet):
+    """ list and create and retrieve methods for category (using ViewSet) """
+    serializer_class = CategorySerializer
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+    queryset = Category.objects.all()
+
+    def list(self, request):
+        serializer = self.serializer_class(self.queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def retrieve(self, request, pk):
+        obj = Category.objects.get(pk=pk)
+        serializer = self.serializer_class(obj)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def create(self, request):
+        data = request.data
+        serializer = self.serializer_class(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
