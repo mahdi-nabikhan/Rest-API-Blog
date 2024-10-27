@@ -1,6 +1,12 @@
 from django.urls import path
 from blog.api.v1.views import *
+
 urlpatterns = [
-    path('post-list/', PostList.as_view(), name='post-list'),
+    # API View
+    path('category/', CategoryListCreate.as_view(), name='category'),
+    path('post-list/', PostListCreation.as_view(), name='post-list'),
+    path('post-detail/<int:pk>/', PostDetail.as_view(), name='post-detail'),
+
+    # Generic View
 
 ]
