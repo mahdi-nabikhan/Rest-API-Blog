@@ -7,6 +7,9 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework import generics
 from rest_framework import viewsets
 from .permissions import *
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter
+
 
 class CategoryListCreate(APIView):
     """
@@ -14,6 +17,7 @@ class CategoryListCreate(APIView):
     """
     serializer_class = CategorySerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
+
 
     def get(self, request):
         categories = Category.objects.all()
@@ -35,6 +39,9 @@ class PostListCreation(APIView):
     """
     serializer_class = PostSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
+    filter_backends = (DjangoFilterBackend, SearchFilter,)
+    filterset_fields = ('author', 'category')
+    search_fields = ('title', 'category', 'content')
 
     def get(self, request):
         post = Posts.objects.all()
@@ -56,7 +63,7 @@ class PostDetail(APIView):
     getting the single post and updated the post and delete the post
     """
     serializer_class = PostSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly)
+    permission_classes = (IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
 
     def get(self, request, pk):
         post = Posts.objects.get(pk=pk)
@@ -95,7 +102,7 @@ class PostListGeneric(generics.ListCreateAPIView):
     getting list of post and creating a new post (with generic method)
     """
     serializer_class = PostSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly)
+    permission_classes = (IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
     queryset = Posts.objects.all()
 
     def get(self, request, *args, **kwargs):
@@ -142,7 +149,7 @@ class PostCRUDViewSet(viewsets.ViewSet):
     """
     CRUD operation for post (using ViewSet)
     """
-    permission_classes = [IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
     serializer_class = PostSerializer
     queryset = Posts.objects.all()
 
