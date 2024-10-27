@@ -17,11 +17,11 @@ class CategoryListCreate(APIView):
 
     def get(self, request):
         categories = Category.objects.all()
-        serializer = self.serializer_class(categories, many=True)
+        serializer = self.serializer_class(categories, many=True, context={'request': request})
         return Response(serializer.data)
 
     def post(self, request):
-        serializer = self.serializer_class(data=request.data)
+        serializer = self.serializer_class(data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -38,12 +38,12 @@ class PostListCreation(APIView):
 
     def get(self, request):
         post = Posts.objects.all()
-        serializer = PostSerializer(post, many=True)
+        serializer = PostSerializer(post, many=True, context={'request': request})
         return Response(serializer.data)
 
     def post(self, request):
         data = request.data
-        serializer = self.serializer_class(data=data)
+        serializer = self.serializer_class(data=data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -60,14 +60,14 @@ class PostDetail(APIView):
 
     def get(self, request, pk):
         post = Posts.objects.get(pk=pk)
-        serializer = self.serializer_class(post)
+        serializer = self.serializer_class(post, context={'request': request})
         return Response(serializer.data)
 
     def put(self, request, pk):
         data = request.data
         obj = Posts.objects.get(pk=pk)
 
-        serializer = self.serializer_class(obj, data=data)
+        serializer = self.serializer_class(obj, data=data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -77,7 +77,7 @@ class PostDetail(APIView):
     def patch(self, request, pk):
         data = request.data
         obj = Posts.objects.get(pk=pk)
-        serializer = self.serializer_class(obj, data=data, partial=True)
+        serializer = self.serializer_class(obj, data=data, partial=True, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -147,17 +147,17 @@ class PostCRUDViewSet(viewsets.ViewSet):
     queryset = Posts.objects.all()
 
     def list(self, request):
-        serializer = self.serializer_class(self.queryset, many=True)
+        serializer = self.serializer_class(self.queryset, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def retrieve(self, request, pk):
         obj = Posts.objects.get(pk=pk)
-        serializer = self.serializer_class(obj)
+        serializer = self.serializer_class(obj, context={'request': request})
         return Response(serializer.data)
 
     def create(self, request):
         data = request.data
-        serializer = self.serializer_class(data=data)
+        serializer = self.serializer_class(data=data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -167,7 +167,7 @@ class PostCRUDViewSet(viewsets.ViewSet):
     def update(self, request, pk):
         obj = Posts.objects.get(pk=pk)
         data = request.data
-        serializer = self.serializer_class(obj, data=data)
+        serializer = self.serializer_class(obj, data=data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -182,7 +182,7 @@ class PostCRUDViewSet(viewsets.ViewSet):
     def partial_update(self, request, pk):
         obj = Posts.objects.get(pk=pk)
         data = request.data
-        serializer = self.serializer_class(instance=obj, data=data, partial=True)
+        serializer = self.serializer_class(instance=obj, data=data, partial=True, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -197,17 +197,17 @@ class CategoryCRViewSet(viewsets.ViewSet):
     queryset = Category.objects.all()
 
     def list(self, request):
-        serializer = self.serializer_class(self.queryset, many=True)
+        serializer = self.serializer_class(self.queryset, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def retrieve(self, request, pk):
         obj = Category.objects.get(pk=pk)
-        serializer = self.serializer_class(obj)
+        serializer = self.serializer_class(obj, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def create(self, request):
         data = request.data
-        serializer = self.serializer_class(data=data)
+        serializer = self.serializer_class(data=data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
