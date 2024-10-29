@@ -6,6 +6,7 @@ from rest_framework import viewsets
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from .serializer import *
+from rest_framework.permissions import IsAuthenticated
 
 
 class RegistrationApiView(generics.GenericAPIView):
@@ -21,7 +22,9 @@ class RegistrationApiView(generics.GenericAPIView):
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+
+            new = serializer.save()
+            Token.objects.create(user=new)
             data = {
                 'massage': 'user added',
                 'email': serializer.validated_data['email'],
@@ -54,3 +57,14 @@ class Login(ObtainAuthToken):
             }, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
+
+
+class CustomDiscardAuthToken(APIView):
+    """
+    destroy user token (because we use o auth token) and log out
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        request.user.auth_token.delete()
+        return Response({'details': 'logged out'})
