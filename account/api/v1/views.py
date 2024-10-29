@@ -10,13 +10,13 @@ from rest_framework.permissions import IsAuthenticated
 
 
 class RegistrationApiView(generics.GenericAPIView):
-    '''
+    """
     get information from post request method and create a user
     information :
         email : char field
         password : char field
         password 2 : char field
-    '''
+    """
     serializer_class = RegistrationSerializer
 
     def post(self, request, *args, **kwargs):
