@@ -19,5 +19,8 @@ urlpatterns = [
     path('jwt/customLogin/', CustomTokenObtainPerView.as_view(), name='jwt-custom-login'),
     path('change/password/', ChangePasswordAPIView.as_view(), name='change password'),
     # profile
-    path('profile/', ProfileApiView.as_view(), name='profile')
+    path('profile/', ProfileApiView.as_view(), name='profile'),
+
+    # activation account
+    path('test/email/send/',TestEmailSendView.as_view(),name='email-send'),
 ]
