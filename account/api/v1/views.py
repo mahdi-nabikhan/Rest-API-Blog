@@ -73,3 +73,28 @@ class CustomDiscardAuthToken(APIView):
 
 class CustomTokenObtainPerView(TokenObtainPairView):
     serializer_class = CustomObtainTokenSerializer
+
+
+class ChangePasswordAPIView(generics.UpdateAPIView):
+    serializer_class = ChangePasswordSerializer
+    permission_classes = [IsAuthenticated]
+    model = User
+
+
+    def get_object(self):
+        obj = self.request.user
+        return obj
+
+    def update(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            if not self.object.check_password(serializer.data.get('old_password')):
+                return Response({'details': 'wrong password'})
+
+            self.object.set_password(serializer.data.get('new_password'))
+            self.object.save()
+            return Response({'details':'changing password successfully'})
+
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
