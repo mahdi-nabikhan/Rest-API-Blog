@@ -8,6 +8,7 @@ from rest_framework.authtoken.models import Token
 from .serializer import *
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView
+from django.shortcuts import get_object_or_404
 
 
 class RegistrationApiView(generics.GenericAPIView):
@@ -80,7 +81,6 @@ class ChangePasswordAPIView(generics.UpdateAPIView):
     permission_classes = [IsAuthenticated]
     model = User
 
-
     def get_object(self):
         obj = self.request.user
         return obj
@@ -94,7 +94,17 @@ class ChangePasswordAPIView(generics.UpdateAPIView):
 
             self.object.set_password(serializer.data.get('new_password'))
             self.object.save()
-            return Response({'details':'changing password successfully'})
+            return Response({'details': 'changing password successfully'})
 
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ProfileApiView(generics.RetrieveUpdateAPIView):
+    serializer_class = ProfileSerializer
+    queryset = Profile.objects.all()
+
+    def get_object(self):
+        queryset = self.get_queryset()
+        obj = get_object_or_404(queryset, user=self.request.user)
+        return obj
