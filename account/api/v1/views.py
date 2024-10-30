@@ -73,10 +73,20 @@ class CustomDiscardAuthToken(APIView):
 
 
 class CustomTokenObtainPerView(TokenObtainPairView):
+    """
+    custom creation token with TokenObtainPairView using CustomObtainTokenSerializer
+    """
     serializer_class = CustomObtainTokenSerializer
 
 
 class ChangePasswordAPIView(generics.UpdateAPIView):
+    """
+    get information for change password view for each user
+    information:
+        old_password = char field()
+        new_password = char field()
+        new_password1 = char field()
+    """
     serializer_class = ChangePasswordSerializer
     permission_classes = [IsAuthenticated]
     model = User
@@ -101,6 +111,14 @@ class ChangePasswordAPIView(generics.UpdateAPIView):
 
 
 class ProfileApiView(generics.RetrieveUpdateAPIView):
+    """
+    update and retrieve profile information:
+    information:
+        user foreign key from user table in account model
+        first_name char field ()
+        last_name char field ()
+        description char field ()
+    """
     serializer_class = ProfileSerializer
     queryset = Profile.objects.all()
 

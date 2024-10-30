@@ -31,8 +31,8 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
 
 class LoginSerializer(serializers.Serializer):
-    username = serializers.CharField(
-        label=_("Username"),
+    email = serializers.EmailField(  # تغییر از username به email
+        label=_("Email"),
         write_only=True
     )
     password = serializers.CharField(
@@ -47,21 +47,17 @@ class LoginSerializer(serializers.Serializer):
     )
 
     def validate(self, attrs):
-        username = attrs.get('email')
+        email = attrs.get('email')
         password = attrs.get('password')
 
-        if username and password:
+        if email and password:
             user = authenticate(request=self.context.get('request'),
-                                username=username, password=password)
+                                username=email, password=password)
+            if user is None or not user.is_verified:
+                raise serializers.ValidationError({'detail': 'Invalid credentials or user is not verified.'})
 
-            # The authenticate call simply returns None for is_active=False
-            # users. (Assuming the default ModelBackend authentication
-            # backend.)
-            if not user:
-                msg = _('Unable to log in with provided credentials.')
-                raise serializers.ValidationError(msg, code='authorization')
         else:
-            msg = _('Must include "username" and "password".')
+            msg = _('Must include "email" and "password".')
             raise serializers.ValidationError(msg, code='authorization')
 
         attrs['user'] = user

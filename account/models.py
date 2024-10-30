@@ -28,6 +28,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_admin = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     email = models.EmailField(unique=True)
+    is_verified = models.BooleanField(default=False)
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
     objects = MyManager()
