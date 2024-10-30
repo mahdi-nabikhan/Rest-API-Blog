@@ -7,6 +7,7 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from .serializer import *
 from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 
 class RegistrationApiView(generics.GenericAPIView):
@@ -68,3 +69,37 @@ class CustomDiscardAuthToken(APIView):
     def post(self, request):
         request.user.auth_token.delete()
         return Response({'details': 'logged out'})
+
+
+class CustomTokenObtainPerView(TokenObtainPairView):
+    """
+    custom TokenObtainPerView create a jwt token
+    """
+    serializer_class = CustomObtainTokenSerializer
+
+
+class ChangePassword(generics.UpdateAPIView):
+    """
+    send old password & new password1 & new password 2 and change the old password
+    old password
+    """
+    permission_classes = [IsAuthenticated]
+    model = User
+    serializer_class = ChangePasswordSerializers
+    queryset = User.objects.all()
+
+    def get_object(self):
+        obj = self.request.user
+
+        return obj
+
+    def update(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            if not self.object.check_password(serializer.data.get('old_password')):
+                return Response({'old_password': ['wrong password']})
+            self.object.check_password(serializer.data.get('new_password1'))
+            self.object.save()
+            return Response({'details': 'changing password successfully'})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
