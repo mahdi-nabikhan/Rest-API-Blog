@@ -7,6 +7,7 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from .serializer import *
 from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 
 class RegistrationApiView(generics.GenericAPIView):
@@ -68,3 +69,7 @@ class CustomDiscardAuthToken(APIView):
     def post(self, request):
         request.user.auth_token.delete()
         return Response({'details': 'logged out'})
+
+
+class CustomTokenObtainPerView(TokenObtainPairView):
+    serializer_class = CustomObtainTokenSerializer
