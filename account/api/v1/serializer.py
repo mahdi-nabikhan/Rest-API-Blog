@@ -93,3 +93,18 @@ class ProfileSerializer(serializers.ModelSerializer):
         model = Profile
         fields = ('user', 'first_name', 'last_name', 'description')
         read_only_fields = ('user',)
+
+
+class ActivateResendSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate(self, attrs):
+        email = attrs.get('email')
+        try:
+            user = User.objects.get(email=email)
+
+        except User.DoesNotExist:
+            raise serializers.ValidationError({'details': 'user does not exist'})
+
+        attrs['user'] = user
+        return super().validate(attrs)

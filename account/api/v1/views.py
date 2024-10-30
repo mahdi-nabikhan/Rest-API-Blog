@@ -1,3 +1,5 @@
+import jwt
+from django.conf import settings
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
@@ -9,7 +11,22 @@ from .serializer import *
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.shortcuts import get_object_or_404
-from django.core.mail import send_mail
+from django.core.mail import send_mail, EmailMessage
+from rest_framework_simplejwt.tokens import RefreshToken
+import threading
+
+
+class EmailThread(threading.Thread):
+    """
+    sending email use thread for separated  sending email with django
+    """
+
+    def __init__(self, email_obj):
+        threading.Thread.__init__(self)
+        self.email_obj = email_obj
+
+    def run(self):
+        self.email_obj.send()
 
 
 class RegistrationApiView(generics.GenericAPIView):
@@ -33,9 +50,17 @@ class RegistrationApiView(generics.GenericAPIView):
                 'email': serializer.validated_data['email'],
 
             }
+            obj_user = get_object_or_404(User, email=serializer.validated_data['email'])
+            token = self.get_token_for_user(obj_user)
+            email_obj = EmailMessage('email/hello.tpl', {'name': 'ali'}, 'admin@admin.com', to=[self.email])
+            EmailThread(email_obj).start()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
+
+    def get_token_for_user(self, user):
+        refresh = RefreshToken.for_user(user)
+        return str(refresh.access_token)
 
 
 class Login(ObtainAuthToken):
@@ -130,17 +155,57 @@ class ProfileApiView(generics.RetrieveUpdateAPIView):
 
 
 class TestEmailSendView(generics.GenericAPIView):
-    def post(self, request, *args, **kwargs):
-        return Response({'details': 'send email'})
+    """
+    send a dummy email for testing ...
+    """
 
     def get(self, request, *args, **kwargs):
-        send_mail(
-            'Subject here',
-            'here is the massage',
-            'from@example.com',
-            ['to@example.com'],
-            fail_silently=False,
-        )
+        self.email = 'mitinabi718@gmail.com'
+        obj_user = get_object_or_404(User, email=self.email)
+        token = self.get_token_for_user(obj_user)
+        email_obj = EmailMessage('email/hello.tpl', {'name': 'ali'}, 'admin@admin.com', to=[self.email])
+        EmailThread(email_obj).start()
         return Response({'details': 'email sent'})
 
+    def get_token_for_user(self, user):
+        refresh = RefreshToken.for_user(user)
+        return str(refresh.access_token)
 
+
+class ActivationApiView(APIView):
+    def post(self, request, token, *args, **kwargs):
+        try:
+            token = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+            user_id = token['user_id']
+        except jwt.ExpiredSignatureError:
+            return Response({'detail': 'expired token'})
+        except jwt.InvalidTokenError:
+            return Response({'detail': 'invalid token'})
+        user = User.objects.get(pk=user_id)
+        user.is_verified = True
+        if user.is_verified:
+            return Response({'detail': 'user already verified'})
+        user.save()
+
+        return Response({'detail': 'activated and verified'})
+
+
+class ActivationResendApiView(APIView):
+    serializer_class = ActivateResendSerializer
+
+    def post(self, request, token, *args, **kwargs):
+        email = request.data.get('email')
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            user_obj = serializer.validated_data.get('email')
+            user = get_object_or_404(User, email=user_obj)
+            token = self.get_token_for_user(user)
+            email_obj = EmailMessage('email/hello.tpl', {'name': 'ali'}, 'admin@admin.com', to=[self.email])
+            EmailThread(email_obj).start()
+            return Response({'details': 'email sent'})
+        else:
+            return Response({'detail': 'email not found'})
+
+    def get_token_for_user(self, user):
+        refresh = RefreshToken.for_user(user)
+        return str(refresh.access_token)
