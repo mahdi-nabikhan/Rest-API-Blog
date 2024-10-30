@@ -16,10 +16,5 @@ urlpatterns = [
     path('jwt/create/token/', TokenObtainPairView.as_view(), name='jwt-token'),
     path('jwt/refresh/token/', TokenRefreshView.as_view(), name='jwt-refresh'),
     path('jwt/verify/token/', TokenVerifyView.as_view(), name='jwt-verify'),
-    path('jwt/customLogin/', CustomTokenObtainPerView.as_view(), name='jwt-custom-login'),
-
-    path('change/password/', ChangePassword.as_view(), name='change_password'),
-
-    # profile
-    path('profile/', ProfileApiView.as_view(), name='profile')
+    path('jwt/customLogin/',CustomTokenObtainPerView.as_view(),name='jwt-custom-login'),
 ]

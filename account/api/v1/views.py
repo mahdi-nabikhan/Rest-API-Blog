@@ -8,7 +8,6 @@ from rest_framework.authtoken.models import Token
 from .serializer import *
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView
-from django.shortcuts import get_object_or_404
 
 
 class RegistrationApiView(generics.GenericAPIView):
@@ -73,51 +72,4 @@ class CustomDiscardAuthToken(APIView):
 
 
 class CustomTokenObtainPerView(TokenObtainPairView):
-    """
-    custom TokenObtainPerView create a jwt token
-    """
     serializer_class = CustomObtainTokenSerializer
-
-
-class ChangePassword(generics.UpdateAPIView):
-    """
-    send old password & new password1 & new password 2 and change the old password
-    old password
-    """
-    permission_classes = [IsAuthenticated]
-    model = User
-    serializer_class = ChangePasswordSerializers
-    queryset = User.objects.all()
-
-    def get_object(self):
-        obj = self.request.user
-
-        return obj
-
-    def update(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        serializer = self.serializer_class(data=request.data)
-        if serializer.is_valid():
-            if not self.object.check_password(serializer.data.get('old_password')):
-                return Response({'old_password': ['wrong password']})
-            self.object.check_password(serializer.data.get('new_password1'))
-            self.object.save()
-            return Response({'details': 'changing password successfully'})
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class ProfileApiView(generics.RetrieveUpdateAPIView):
-    """
-    end point for get information about users profile
-    i
-    """
-    serializer_class = ProfileSerializers
-    queryset = Profile.objects.all()
-
-    def get_object(self):
-        queryset = self.get_queryset()
-        obj = get_object_or_404(queryset, user=self.request.user)
-        return obj
-
-    def get_queryset(self):
-        return super().get_queryset()
